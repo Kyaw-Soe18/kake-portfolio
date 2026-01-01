@@ -73,7 +73,7 @@ function renderSkills(type = "tech", btn = null) {
                 <span>${skill.level}%</span>
               </div>
               <div class="progress mt-1">
-                <div class="progress-bar" style="width:${skill.level}%"></div>
+                <div class="progress-bar" data-level="${skill.level}" style="width:0%"></div>
               </div>
             </div>
           </div>
@@ -81,11 +81,32 @@ function renderSkills(type = "tech", btn = null) {
       </div>
     `;
   });
+  
+animateSkills();
 }
 
 // Default load
 const defaultBtn = document.querySelector(".btn-filter.active");
 renderSkills("tech", defaultBtn);
+
+function animateSkills() {
+  const bars = document.querySelectorAll(".progress-bar");
+
+  bars.forEach(bar => {
+    const level = bar.getAttribute("data-level");
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          bar.style.width = level + "%";
+          observer.unobserve(bar);
+        }
+      });
+    }, { threshold: 0.6 });
+
+    observer.observe(bar);
+  });
+}
 
 
 const projects = [
@@ -116,47 +137,56 @@ const projects = [
   }
 ];
 
-
 const projectsContainer = document.getElementById("projectsContainer");
 
 function renderProjects(filterType = "All") {
-  projectsContainer.innerHTML = ""; 
+  
+  projectsContainer.innerHTML = "";
 
   projects
     .filter(project => filterType === "All" || project.type.trim() === filterType)
     .forEach(project => {
       projectsContainer.innerHTML += `
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card-custom project-card h-100">
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card-custom project-card h-100">
 
-          <div class="project-img-wrap">
-            <img src="${project.image}" loading="lazy">
+            <div class="project-img-wrap">
+              <img src="${project.image}" loading="lazy">
+            </div>
+
+            <div class="project-body">
+              <h5 class="fw-bold mb-1">${project.title}</h5>
+              <p class="project-des fw-boldc">${project.desc}</p>
+              <p class="project-stack fw-bold">
+                <strong>Tech : </strong> ${project.stack}
+              </p>
+
+              <div class="project-buttons mt-3 d-flex justify-content-between">
+                <a href="${project.github}" target="_blank" class="btn-tech btn-github">
+                  <i class="bi bi-github"></i> GitHub
+                </a>
+
+                ${
+                  project.demo
+                    ? `
+                      <a href="${project.demo}" target="_blank" class="btn-tech btn-demo">
+                        <i class="bi bi-box-arrow-up-right"></i> Demo
+                      </a>
+                    `
+                    : `
+                      <span class="btn-tech btn-type">
+                        ${project.type}
+                      </span>
+                    `
+                }
+              </div>
+
+            </div>
           </div>
-
-          <div class="project-body">
-            <h5 class="fw-bold mb-1">${project.title}</h5>
-            <p class="project-des fw-boldc">${project.desc}</p>
-            <p class="project-stack fw-bold"><strong>Tech : </strong> ${project.stack}</p>
-
-            <div class="project-buttons mt-3 d-flex justify-content-between">
-    <a href="${project.github}" target="_blank" class="btn-tech btn-github">
-        <i class="bi bi-github"></i> GitHub
-    </a>
-
-    ${
-      project.demo
-        ? `<a href="${project.demo}" target="_blank" class="btn-tech btn-demo">
-             <i class="bi bi-box-arrow-up-right"></i> Demo
-           </a>`
-        : `<span class="btn-tech btn-type">${project.type}</span>`
-    }
-</div>
-
-
         </div>
-      </div>
-    `;
+      `;
     });
 }
+
 renderProjects("All");
 
